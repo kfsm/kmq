@@ -1,0 +1,48 @@
+{code_paths, [
+   "./ebin"
+  ,"./deps/datum"
+  ,"./deps/esq"
+  ,"./deps/feta"
+  ,"./deps/goldrush"
+  ,"./deps/htstream"
+  ,"./deps/knet"
+  ,"./deps/lager"
+  ,"./deps/pipe"
+  ,"./deps/pns"
+  ,"./deps/uid"
+]}.
+{log_level,       info}.
+{report_interval,    1}.
+{driver,          kmq_benchmark}.
+
+
+%%
+%% workload
+{mode,              max}.
+{duration,          1}.
+{concurrent,        4}.
+ 
+{key_generator,   {uniform_int, 1024}}.
+{value_generator, {fixed_bin,   1024}}.
+
+{operations, [
+   {tcp,    10}
+   % {enq,    1} 
+  ,{deq,    1} 
+]}.
+
+{queue, [
+   %%
+   %% ingress queue
+   {in, [
+      {ttl,   100}
+   ]}
+
+   %%
+   %% message queue
+  ,{mq, [
+      {capacity, 1000},
+      {tts,      5000},
+      {fspool,   "/tmp/q"}
+   ]}
+]}.

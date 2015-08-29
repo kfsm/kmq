@@ -19,7 +19,7 @@
 %%   light-weight message queue
 -module(kmq).
 
--export([start/0]).
+-export([start/0, start/1]).
 -export([
    queue/2
   ,enq/2
@@ -32,8 +32,9 @@
 %%
 %% RnD application start
 start() ->
-   applib:boot(?MODULE, []).
-
+   start(code:where_is_file("app.config")).
+start(Config) ->
+   applib:boot(?MODULE, Config).
 
 %%
 %% create message queue
