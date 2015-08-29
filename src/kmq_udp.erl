@@ -15,43 +15,37 @@
 %%   See the License for the specific language governing permissions and
 %%   limitations under the License.
 %%
--module(kmq_app).
--behaviour(application).
+%% @description
+%%   queue tcp protocol
+-module(kmq_udp).
+-behaviour(pipe).
 
 -export([
-   start/2, stop/1
+   start_link/2,
+   init/1,
+   free/2,
+   ioctl/2,
+   handle/3
 ]).
 
-start(_Type, _Args) ->
-   lists:foreach(
-      fun(X) -> listen(uri:new(X)) end, 
-      opts:val(port, [], kmq)
-   ),
-   kmq_sup:start_link().
+%%
+%%
+start_link(Uri, Opts) ->
+   pipe:start_link(?MODULE, [Uri, Opts], []).
 
-stop(_State) ->
-   ok.
+init([Uri, Opts]) ->
+   {ok, handle, knet:bind(Uri, Opts)}.
+
+free(_, Sock) ->
+   knet:close(Sock).
 
 %%
-%% 
-listen({uri, tcp, _} = Uri) ->
-   knet:listen(Uri, [
-      {acceptor,    kmq_tcp}
-     ,{backlog,         256}
-     ,{pack,           line}
-     ,{sndbuf,   256 * 1024}
-     ,{recbuf,   256 * 1024}
-   ]);
+ioctl(_, _) ->
+   throw(not_implemented).
 
-listen({uri, udp, _} = Uri) ->
-   knet:listen(Uri, [
-      {acceptor,    kmq_udp}
-     ,{backlog,        1024}
-     ,{dispatch,        p2p}
-     ,{pack,           line}
-     ,{sndbuf,   256 * 1024}
-     ,{recbuf,   256 * 1024}
-   ]).
-
-
-
+%%
+%%
+handle({udp, _, {_Peer, Pckt}}, _Pipe, Sock) ->
+   [Queue, E] = binary:split(Pckt, <<$:>>),
+   kmq:enq(Queue, E),
+   {next_state, handle, Sock}.

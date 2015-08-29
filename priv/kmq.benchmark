@@ -26,8 +26,9 @@
 {value_generator, {fixed_bin,   1024}}.
 
 {operations, [
-   {tcp,    10}
-   % {enq,    1} 
+   {tcp,    2}
+  ,{udp,    5}
+  ,{enq,    1} 
   ,{deq,    1} 
 ]}.
 
