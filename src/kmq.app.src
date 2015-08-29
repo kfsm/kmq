@@ -1,0 +1,17 @@
+{application, kmq,
+   [
+      {description, "knet message queue"},
+      {vsn,         "0.0.0"},
+      {modules,     []},
+      {registered,  []},
+      {applications,[
+         kernel
+        ,stdlib
+        ,knet
+        ,esq
+      ]},
+      {mod, {kmq_app, []}},
+      {env, []}
+   ]
+}.  
+
