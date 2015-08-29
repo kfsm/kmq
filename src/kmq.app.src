@@ -7,8 +7,9 @@
       {applications,[
          kernel
         ,stdlib
-        ,knet
+        ,pns
         ,esq
+        ,knet
       ]},
       {mod, {kmq_app, []}},
       {env, []}

@@ -15,11 +15,11 @@
 %%   See the License for the specific language governing permissions and
 %%   limitations under the License.
 %%
--module(kmq_sup).
+-module(kmq_queue_sup).
 -behaviour(supervisor).
 
 -export([
-   start_link/0, init/1
+   start_link/2, init/1
 ]).
 
 %%
@@ -29,14 +29,26 @@
 
 %%
 %%
-start_link() ->
-   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(Name, Opts) ->
+   {ok, Sup} = supervisor:start_link(?MODULE, [Name, Opts]),
+   lists:foreach(
+      fun(X) ->
+         {ok, _}  = supervisor:start_child(Sup, 
+            ?CHILD(worker, X, kmq_route, [{in, Name}, {mq, Name}])
+         )
+      end,
+      lists:seq(1, opts:val(n, 1, Opts))
+   ),
+   {ok, Sup}.
 
-init([]) -> 
+init([Name, Opts]) -> 
    {ok,
       {
-         {simple_one_for_one, 4, 1800},
-         [?CHILD(supervisor, kmq_queue_sup)]
+         {one_for_all, 4, 1800},
+         [
+            ?CHILD(worker, in, kmq_queue, [{in, Name}, opts:val(in, [], Opts)])
+           ,?CHILD(worker, mq, kmq_queue, [{mq, Name}, opts:val(mq, [], Opts)])
+         ]
       }
    }.
 
