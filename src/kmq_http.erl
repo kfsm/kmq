@@ -15,9 +15,7 @@
 %%   See the License for the specific language governing permissions and
 %%   limitations under the License.
 %%
-%% @description
-%%   queue tcp protocol
--module(kmq_tcp).
+-module(kmq_http).
 -behaviour(pipe).
 
 -export([
@@ -25,9 +23,9 @@
    init/1,
    free/2,
    ioctl/2,
-   handle/3
+   handle/3,
+   message/3
 ]).
-
 
 %%
 %%
@@ -48,13 +46,26 @@ ioctl(_, _) ->
 
 %%
 %%
-handle({tcp, _Pid, {established, _Peer}}, _Pipe, State) ->
-   {next_state, handle, State};
+handle({http, _Sock, {'POST', Url, Head, _Env}}, _Pipe, State) ->
+   [Queue] = uri:segments(Url),
+   Connect = case lists:keyfind('Connection', 1, Head) of
+      false    -> <<"keep-alive">>;
+      {_, Val} -> Val
+   end,
+   {next_state, message, State#{q => Queue, in => q:new(), c => Connect}}.
 
-handle({tcp, _Peer, Pckt}, _Pipe, State) ->
-   [Queue, E] = binary:split(Pckt, <<$:>>),
-   kmq:enq(Queue, E),
-   {next_state, handle, State}.
+message({http, _Sock,  eof}, Pipe, #{q := Queue, in := In, c := Connect} = State) ->
+   Pckt = erlang:iolist_to_binary(q:list(In)),
+   kmq:enq(Queue, Pckt),
+   pipe:a(Pipe, {ok, [
+      {'Server',     <<"kmq">>},
+      {'Transfer-Encoding', <<"chunked">>},
+      {'Connection', Connect}
+   ]}),
+   pipe:a(Pipe, bits:btoh( crypto:hash(sha, Pckt) )),
+   pipe:a(Pipe, eof),
+   {next_state, handle, State#{q => undefined, in => undefined}};
 
-
+message({http, _Sock, Pckt}, _Pipe, #{in := In} = State) ->
+   {next_state, message, State#{in => q:enq(Pckt, In)}}.
 

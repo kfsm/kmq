@@ -40,7 +40,7 @@ run(udp, KeyGen, ValGen, #{udp := undefined} = State) ->
    run(udp, KeyGen, ValGen, State#{udp => Sock});
    
 run(udp,_KeyGen, ValGen, #{udp := Sock} = State) ->
-   Pckt = <<"testq:", (base64:encode(ValGen()))/binary, $\n>>,
+   Pckt = <<"testq:", (base64:encode(ValGen()))/binary>>,
    case gen_udp:send(Sock, ?HOST, ?UDP, Pckt) of
       ok    -> {ok, State};
       Error -> {error, Error, State#{udp => undefined}}

@@ -34,9 +34,11 @@ start_link(Uri, Opts) ->
    pipe:start_link(?MODULE, [Uri, Opts], []).
 
 init([Uri, Opts]) ->
-   {ok, handle, knet:bind(Uri, Opts)}.
+   {ok, handle, 
+      #{sock => knet:bind(Uri, Opts)}
+   }.
 
-free(_, Sock) ->
+free(_, #{sock := Sock}) ->
    knet:close(Sock).
 
 %%
@@ -45,7 +47,7 @@ ioctl(_, _) ->
 
 %%
 %%
-handle({udp, _, {_Peer, Pckt}}, _Pipe, Sock) ->
+handle({udp, _, {_Peer, Pckt}}, _Pipe, State) ->
    [Queue, E] = binary:split(Pckt, <<$:>>),
    kmq:enq(Queue, E),
-   {next_state, handle, Sock}.
+   {next_state, handle, State}.

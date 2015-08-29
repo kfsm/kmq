@@ -48,10 +48,15 @@ listen({uri, udp, _} = Uri) ->
       {acceptor,    kmq_udp}
      ,{backlog,        1024}
      ,{dispatch,        p2p}
-     ,{pack,           line}
+     ,{pack,            raw}
+     ,{sndbuf,   256 * 1024}
+     ,{recbuf,   256 * 1024}
+   ]);
+
+listen({uri, http, _} = Uri) ->
+   knet:listen(Uri, [
+      {acceptor,   kmq_http}
+     ,{backlog,         256}
      ,{sndbuf,   256 * 1024}
      ,{recbuf,   256 * 1024}
    ]).
-
-
-
