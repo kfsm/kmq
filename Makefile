@@ -32,7 +32,7 @@ USER =
 PASS =
 
 ## root path to benchmark framework
-BB     = ../basho_bench
+BB     = ../../../github/basho_bench
 SSHENV = /tmp/ssh-agent.conf
 ADDR   = $(shell ifconfig ${NET} | sed -En 's/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')
 BRANCH = $(shell git symbolic-ref --short -q HEAD)
@@ -45,6 +45,8 @@ EFLAGS = \
 	-pa ${ROOT}/ebin \
 	-pa ${ROOT}/deps/*/ebin \
 	-pa ${ROOT}/apps/*/ebin \
+	-pa ${ROOT}/examples/*/ebin \
+	-pa ${ROOT}/examples/*/priv \
 	-pa ${ROOT}/rel/files \
 	-pa ${ROOT}/priv \
 	-kernel inet_dist_listen_min 32100 \

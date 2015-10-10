@@ -29,7 +29,8 @@ run(tcp, KeyGen, ValGen, #{tcp := undefined} = State) ->
    run(tcp, KeyGen, ValGen, State#{tcp => Sock});
    
 run(tcp,_KeyGen, ValGen, #{tcp := Sock} = State) ->
-   Pckt = <<"testq:", (base64:encode(ValGen()))/binary, $\n>>,
+   %% @todo: work out serialization protocol,  
+   Pckt = <<"testq:", (bits:btoh(ValGen()))/binary, $\n>>,
    case gen_tcp:send(Sock, Pckt) of
       ok    -> {ok, State};
       Error -> {error, Error, State#{tcp => undefined}}
@@ -40,7 +41,7 @@ run(udp, KeyGen, ValGen, #{udp := undefined} = State) ->
    run(udp, KeyGen, ValGen, State#{udp => Sock});
    
 run(udp,_KeyGen, ValGen, #{udp := Sock} = State) ->
-   Pckt = <<"testq:", (base64:encode(ValGen()))/binary>>,
+   Pckt = <<"testq:", (bits:btoh(ValGen()))/binary>>,
    case gen_udp:send(Sock, ?HOST, ?UDP, Pckt) of
       ok    -> {ok, State};
       Error -> {error, Error, State#{udp => undefined}}
@@ -59,5 +60,12 @@ run(deq, _KeyGen, _ValGen, State) ->
       X when is_list(X) -> {ok, State};
       Err -> {error, Err, State}
    end.
+
+%%%----------------------------------------------------------------------------   
+%%%
+%%% private
+%%%
+%%%----------------------------------------------------------------------------   
+
 
 

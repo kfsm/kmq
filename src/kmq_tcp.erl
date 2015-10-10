@@ -48,12 +48,19 @@ ioctl(_, _) ->
 
 %%
 %%
-handle({tcp, _Pid, {established, _Peer}}, _Pipe, State) ->
+handle({tcp, _Pid, {established, _Peer}},  _Pipe, State) ->
+   {next_state, handle, State};
+
+handle({tcp, _Pid, {terminated, _Reason}}, _Pipe, State) ->
+   {stop, normal, State};
+
+handle({tcp, _Pid, passive}, Pipe, State) ->
+   pipe:a(Pipe, active),
    {next_state, handle, State};
 
 handle({tcp, _Peer, Pckt}, _Pipe, State) ->
    [Queue, E] = binary:split(Pckt, <<$:>>),
-   kmq:enq(Queue, E),
+   kmq:enq(Queue, E, infinity),
    {next_state, handle, State}.
 
 

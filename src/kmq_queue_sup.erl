@@ -39,6 +39,8 @@ start_link(Name, Opts) ->
       end,
       lists:seq(1, opts:val(n, 1, Opts))
    ),
+   clue:define(meter, {kmq, Name, enq}, 10000),
+   clue:define(meter, {kmq, Name, deq}, 10000),
    {ok, Sup}.
 
 init([Name, Opts]) -> 

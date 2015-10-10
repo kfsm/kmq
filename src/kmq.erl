@@ -55,7 +55,9 @@ enq(Queue, E) ->
    enq(Queue, E, 5000).
 
 enq(Queue, E, Timeout) ->
-   pipe:call(pns:whereis(kmq, {in, scalar:s(Queue)}), {enq, E}, Timeout).
+   Name = scalar:s(Queue),
+   clue:inc({kmq, Name, enq}),
+   pipe:call(pns:whereis(kmq, {in, Name}), {enq, E}, Timeout).
 
 %%
 %% dequeue message
@@ -70,5 +72,7 @@ deq(Queue, N) ->
    deq(Queue, N, 5000).
 
 deq(Queue, N, Timeout) ->
-   pipe:call(pns:whereis(kmq, {mq, scalar:s(Queue)}), {deq, N}, Timeout).
+   Name = scalar:s(Queue),
+   clue:inc({kmq, Name, deq}),   
+   pipe:call(pns:whereis(kmq, {mq, Name}), {deq, N}, Timeout).
    

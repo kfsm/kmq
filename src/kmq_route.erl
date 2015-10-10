@@ -66,8 +66,8 @@ handle({Tx, []}, _Pipe, #{tx := Tx} = State) ->
 
 handle({Tx, List}, _Pipe, #{tx := Tx, in := In, eg := Eg} = State) ->
    lists:foreach(
-      fun(X) ->
-         pipe:send(Eg, {enq, X})
+      fun(X) ->         
+         pipe:call(Eg, {enq, X}, infinity)
       end,
       List
    ),

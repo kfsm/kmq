@@ -15,43 +15,29 @@
 %%   See the License for the specific language governing permissions and
 %%   limitations under the License.
 %%
-%% @description
-%%   queue tcp protocol
--module(kmq_udp).
--behaviour(pipe).
+-module(kmqq_app).
+-behaviour(application).
 
 -export([
-   start_link/2,
-   init/1,
-   free/2,
-   ioctl/2,
-   handle/3
+   start/2, stop/1
 ]).
 
-%%
-%%
-start_link(Uri, Opts) ->
-   pipe:start_link(?MODULE, [Uri, Opts], []).
+start(_Type, _Args) ->
+   kmq:queue(kmqq, [
+      {n,    4}
+     ,{in,   [
+         {ttl, 10000}
+      ]}
+     ,{mq,   [
+         {capacity,  1000}
+        ,{tts,      60000}
+        ,{fspool,   "/tmp/kmqq"}
+      ]}
+   ]),
+   clue:define(counter, {kmqq, udp}),
+   clue:define(counter, {kmqq, tcp}),
+   clue:define(counter, {kmqq, sub}),
+   kmqq_sup:start_link().
 
-init([Uri, Opts]) ->
-   {ok, handle, 
-      #{sock => knet:bind(Uri, Opts)}
-   }.
-
-free(_, #{sock := Sock}) ->
-   knet:close(Sock).
-
-%%
-ioctl(_, _) ->
-   throw(not_implemented).
-
-%%
-%%
-handle({udp, _Pid, passive}, Pipe, State) ->
-   pipe:a(Pipe, active),
-   {next_state, handle, State};
-
-handle({udp, _, {_Peer, Pckt}}, _Pipe, State) ->
-   [Queue, E] = binary:split(Pckt, <<$:>>),
-   kmq:enq(Queue, E, infinity),
-   {next_state, handle, State}.
+stop(_State) ->
+   ok.

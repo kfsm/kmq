@@ -9,7 +9,8 @@
   ,"./deps/lager"
   ,"./deps/pipe"
   ,"./deps/pns"
-  ,"./deps/uid"
+  ,"./deps/clue"
+  ,"./deps/eep"
 ]}.
 {log_level,       info}.
 {report_interval,    1}.
@@ -20,30 +21,34 @@
 %% workload
 {mode,              max}.
 {duration,          1}.
-{concurrent,        4}.
+{concurrent,        100}.
  
 {key_generator,   {uniform_int, 1024}}.
 {value_generator, {fixed_bin,   1024}}.
 
 {operations, [
    {tcp,    2}
-  ,{udp,    5}
-  ,{enq,    1} 
+   % {udp,    5}
+  %  {enq,    2} 
   ,{deq,    1} 
 ]}.
 
 {queue, [
    %%
+   %% number of router processes
+   {n,   4}
+
+   %%
    %% ingress queue
-   {in, [
-      {ttl,   100}
+  ,{in, [
+      {ttl,   10000}
    ]}
 
    %%
    %% message queue
   ,{mq, [
-      {capacity, 1000},
-      {tts,      5000},
-      {fspool,   "/tmp/q"}
+     {capacity, 1000},
+     {tts,      5000},
+     {fspool,   "/tmp/q"}
    ]}
 ]}.

@@ -15,43 +15,35 @@
 %%   See the License for the specific language governing permissions and
 %%   limitations under the License.
 %%
-%% @description
-%%   queue tcp protocol
--module(kmq_udp).
--behaviour(pipe).
+-module(kmqq_sup).
+-behaviour(supervisor).
 
 -export([
-   start_link/2,
-   init/1,
-   free/2,
-   ioctl/2,
-   handle/3
+   start_link/0, init/1
 ]).
 
 %%
-%%
-start_link(Uri, Opts) ->
-   pipe:start_link(?MODULE, [Uri, Opts], []).
+-define(CHILD(Type, I),            {I,  {I, start_link,   []}, permanent, 5000, Type, dynamic}).
+-define(CHILD(Type, I, Args),      {I,  {I, start_link, Args}, permanent, 5000, Type, dynamic}).
+-define(CHILD(Type, ID, I, Args),  {ID, {I, start_link, Args}, permanent, 5000, Type, dynamic}).
 
-init([Uri, Opts]) ->
-   {ok, handle, 
-      #{sock => knet:bind(Uri, Opts)}
+%%
+%%
+start_link() ->
+   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+init([]) -> 
+   {ok,
+      {
+         {one_for_one, 4, 1800},
+         [
+            ?CHILD(worker, kmqq_sub)
+         ]
+      }
    }.
 
-free(_, #{sock := Sock}) ->
-   knet:close(Sock).
-
-%%
-ioctl(_, _) ->
-   throw(not_implemented).
-
-%%
-%%
-handle({udp, _Pid, passive}, Pipe, State) ->
-   pipe:a(Pipe, active),
-   {next_state, handle, State};
-
-handle({udp, _, {_Peer, Pckt}}, _Pipe, State) ->
-   [Queue, E] = binary:split(Pckt, <<$:>>),
-   kmq:enq(Queue, E, infinity),
-   {next_state, handle, State}.
+%%%------------------------------------------------------------------
+%%%
+%%% private
+%%%
+%%%------------------------------------------------------------------   
