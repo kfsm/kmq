@@ -49,7 +49,7 @@ free(_Reason, State) ->
 %%%
 %%%----------------------------------------------------------------------------   
 
-handle({enq, Msg}, Pipe, State0) ->
+handle({enq, _, Msg}, Pipe, State0) ->
    State1 = esq:enq(Msg, State0),
    pipe:a(Pipe, ok),
    {next_state, handle, State1};

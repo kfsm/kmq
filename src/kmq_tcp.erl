@@ -58,11 +58,21 @@ handle({tcp, _Pid, passive}, Pipe, State) ->
    pipe:a(Pipe, active),
    {next_state, handle, State};
 
+handle({tcp, _Peer, <<"queue:", Name/binary>>}, _Pipe, State) ->
+   % bind socket with queue name allowing duplex communication
+   pns:register(kmq, {in, Name}, self()),
+   {next_state, handle, State};
+
 handle({tcp, _Peer, Pckt}, _Pipe, State) ->
-   %% Note: enqueue uses synchronous call to 
-   %%%      implement socket level flow control
+   % Note: enqueue uses synchronous call to 
+   %       implement socket level flow control
    [Queue, E] = binary:split(Pckt, <<$:>>),
    kmq:enq(Queue, E, infinity),
+   {next_state, handle, State};
+
+handle({enq, Name, Pckt}, Pipe, #{sock := Sock} = State) ->
+   knet:send(Sock, <<(scalar:s(Name))/binary, $:, Pckt/binary, $\n>>),
+   pipe:a(Pipe, ok),
    {next_state, handle, State}.
 
 
