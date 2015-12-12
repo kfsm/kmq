@@ -59,6 +59,8 @@ handle({tcp, _Pid, passive}, Pipe, State) ->
    {next_state, handle, State};
 
 handle({tcp, _Peer, Pckt}, _Pipe, State) ->
+   %% Note: enqueue uses synchronous call to 
+   %%%      implement socket level flow control
    [Queue, E] = binary:split(Pckt, <<$:>>),
    kmq:enq(Queue, E, infinity),
    {next_state, handle, State}.

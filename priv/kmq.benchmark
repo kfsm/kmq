@@ -21,15 +21,15 @@
 %% workload
 {mode,              max}.
 {duration,          1}.
-{concurrent,        100}.
+{concurrent,        10}.
  
 {key_generator,   {uniform_int, 1024}}.
 {value_generator, {fixed_bin,   1024}}.
 
 {operations, [
-   {tcp,    2}
+%   {tcp,    2}
    % {udp,    5}
-  %  {enq,    2} 
+   {enq,    5} 
   ,{deq,    1} 
 ]}.
 
@@ -47,8 +47,8 @@
    %%
    %% message queue
   ,{mq, [
-     {capacity, 1000},
-     {tts,      5000},
-     {fspool,   "/tmp/q"}
+%     {capacity, 1000},
+%     {tts,      5000},
+%     {fspool,   "/tmp/q"}
    ]}
 ]}.
