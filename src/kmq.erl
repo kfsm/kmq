@@ -41,15 +41,15 @@ start(Config) ->
 %%  Options
 %%    {mq, ...} - message queue specification
 %%    {in, ...} - ingress queue specification
--spec(queue/2 :: (any(), list()) -> {ok, pid()} | {error, any()}).
+-spec queue(any(), list()) -> {ok, pid()} | {error, any()}.
 
 queue(Queue, Opts) ->
    supervisor:start_child(kmq_sup, [scalar:s(Queue), Opts]).
 
 %%
 %% enqueue message
--spec(enq/2 :: (any(), any()) -> ok).
--spec(enq/3 :: (any(), any(), timeout()) -> ok).
+-spec enq(any(), any()) -> ok.
+-spec enq(any(), any(), timeout()) -> ok.
 
 enq(Queue, E) ->
    enq(Queue, E, 5000).
@@ -61,9 +61,9 @@ enq(Queue, E, Timeout) ->
 
 %%
 %% dequeue message
--spec(deq/1 :: (any()) -> [any()]).
--spec(deq/2 :: (any(), integer()) -> [any()]).
--spec(deq/3 :: (any(), any(), timeout()) -> [any()]).
+-spec deq(any()) -> [any()].
+-spec deq(any(), integer()) -> [any()].
+-spec deq(any(), any(), timeout()) -> [any()].
 
 deq(Queue) ->
    deq(Queue, 1).
