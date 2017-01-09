@@ -27,6 +27,9 @@
   ,deq/1
   ,deq/2
   ,deq/3
+  ,sub/2
+  ,sub/3
+  ,sub/4
 ]).
 
 %%
@@ -37,7 +40,11 @@ start(Config) ->
    applib:boot(?MODULE, Config).
 
 %%
-%% create message queue
+%% create message queue, each queue consists of two parts
+%%  * ingress queue (in) - is fast, non-blocking queue that acts as transient channel for incoming data
+%%  * message queue (mq) - is slow queue to aggregate incoming data that targets for this node
+%% The given design allows to avoid congestions on input sockets
+%%
 %%  Options
 %%    {mq, ...} - message queue specification
 %%    {in, ...} - ingress queue specification
@@ -76,3 +83,19 @@ deq(Queue, N, Timeout) ->
    clue:inc({kmq, Name, deq}),   
    pipe:call(pns:whereis(kmq, {mq, Name}), {deq, N}, Timeout).
    
+%%
+%% subscribe to queue notification
+-spec sub(any(), integer()) -> ok.
+-spec sub(any(), pid(), integer()) -> ok.
+-spec sub(any(), pid(), integer(), timeout()) -> ok.
+
+sub(Queue, N) ->
+   sub(Queue, self(), N).
+
+sub(Queue, Pid, N) ->
+   sub(Queue, Pid, N, 5000).
+
+sub(Queue, Pid, N, Timeout) ->
+   Name = scalar:s(Queue),
+   pipe:call(pns:whereis(kmq, {mq, Name}), {sub, Pid, N}, Timeout).
+
