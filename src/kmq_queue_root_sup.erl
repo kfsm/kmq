@@ -15,7 +15,7 @@
 %%   See the License for the specific language governing permissions and
 %%   limitations under the License.
 %%
--module(kmq_sup).
+-module(kmq_queue_root_sup).
 -behaviour(supervisor).
 
 -export([
@@ -35,11 +35,8 @@ start_link() ->
 init([]) -> 
    {ok,
       {
-         {one_for_one, 4, 1800},
-         [
-            ?CHILD(supervisor, kmq_queue_root_sup)
-           ,?CHILD(worker, kmq_peer)
-         ]
+         {simple_one_for_one, 4, 1800},
+         [?CHILD(supervisor, kmq_queue_sup)]
       }
    }.
 

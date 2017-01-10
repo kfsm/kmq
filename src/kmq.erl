@@ -51,7 +51,7 @@ start(Config) ->
 -spec queue(any(), list()) -> {ok, pid()} | {error, any()}.
 
 queue(Queue, Opts) ->
-   supervisor:start_child(kmq_sup, [scalar:s(Queue), Opts]).
+   supervisor:start_child(kmq_queue_root_sup, [scalar:s(Queue), Opts]).
 
 %%
 %% enqueue message
