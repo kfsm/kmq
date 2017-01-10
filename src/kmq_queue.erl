@@ -78,7 +78,7 @@ handle({sub, Pid, N}, Pipe, #state{idle = Idle} = State) ->
 
 handle({Tx, ok}, _Pipe, #state{idle = Idle, busy = Busy0} = State) ->
    case lists:keytake(Tx, 1, Busy0) of
-      {value, Sub, Busy1} ->
+      {value, {_, Sub}, Busy1} ->
          {next_state, handle, pub(State#state{idle = [Sub|Idle], busy = Busy1})};
       false ->
          {next_state, handle, pub(State)}
